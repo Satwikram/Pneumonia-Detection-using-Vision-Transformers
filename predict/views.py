@@ -26,13 +26,15 @@ class PredictionAPIView(APIView):
 
         temp_dir = Path(temp.name)
         
-        uFile = temp_dir / filename
+        # uFile = temp_dir / filename
 
-        with open(uFile, "wb+") as f:
+        fn = f"{temp_dir}/test.png"
+
+        with open(fn, "wb+") as f:
             f.write(image.read())
+            
+            image = cv2.imread(fn, cv2.IMREAD_GRAYSCALE)
 
-            image = cv2.imread(uFile, cv2.IMREAD_GRAYSCALE)
+    
 
-            print(image)
-
-        return "Success"
+        return Response({"Success"})
