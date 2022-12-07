@@ -7,7 +7,20 @@ from pathlib import Path
 
 import cv2
 
+from transformers import ViTFeatureExtractor
+
+from .apps import PredictConfig
+
 # Create your views here.
+
+img_size = (224, 224)
+labels = ['pneumonia', 'normal']
+
+def feature_extraction(samples):
+  
+  feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224")
+
+  return feature_extractor(samples, return_tensors="np")["pixel_values"]
 
 class PredictionAPIView(APIView):
 
@@ -33,8 +46,19 @@ class PredictionAPIView(APIView):
         with open(fn, "wb+") as f:
             f.write(image.read())
             
-            image = cv2.imread(fn, cv2.IMREAD_GRAYSCALE)
+            img_array = cv2.imread(fn, cv2.IMREAD_GRAYSCALE)
+            img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
+            resized_array = cv2.resize(img_array, img_size)
+            resized_array = resized_array / 255
 
-    
+            pixel_values = feature_extraction(samples=[resized_array])
 
-        return Response({"Success"})
+            pred = PredictConfig.model.predict(pixel_values)
+
+            pred = 1 if pred >=0.5 else 0
+
+            print(pred)
+            
+            result = labels[pred]
+
+        return Response({"Condition": result})
