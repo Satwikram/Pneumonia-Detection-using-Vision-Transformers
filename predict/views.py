@@ -57,7 +57,7 @@ class PredictionAPIView(APIView):
 
             pred = 1 if pred >=0.5 else 0
 
-            print(pred)
+            # print(pred)
             
             result = labels[pred]
 
